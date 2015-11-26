@@ -39,13 +39,15 @@ define([
 
         var processedData = _.flatten(_.map(jobsProgress, function(p){
           p.status = "Done";
+          // limit # of completed jobs, to speedup UI
           if (p.completed != 100){
             pPending = _.clone(p);
             pPending.status = "Pending";
             pPending.completed = 100 - p.completed;
             return [p, pPending]
           }
-          return [p]
+          //return [p]
+          return []
         }), true);
 
         myChart.data = processedData;
