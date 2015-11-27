@@ -22,6 +22,16 @@ class SparkInfo(sparkContext: SparkContext, checkInterval: Duration = 5 seconds,
 
   sparkContext.listenerBus.addListener(listener)
 
+  def sparkUi(sc: SparkContext): Option[String] = sc.master match {
+    case _ if sparkContext.isLocal =>
+      // in local mode, we want to use the same host as of spark-notebook (e.g. external IP instead of internal)
+      sc.ui.map(ui => s":${ui.boundPort}/")
+      //      case m if m.startsWith("yarn") =>
+      //        // in YARN mode, we want the YARN proxy, so it'd redirect to Spark History when app has finished
+      //        url
+    case _ => sc.ui.map(_.appUIAddress)
+  }
+
   def fetchMetrics: Future[JsObject] = Future {
     listener.synchronized {
       val activeStages = listener.activeStages.values.toSeq
@@ -55,6 +65,7 @@ class SparkInfo(sparkContext: SparkContext, checkInterval: Duration = 5 seconds,
       val mode: String = listener.schedulingMode.map(_.toString).getOrElse("Unknown")
 
       val result = Json.obj(
+        "sparkUi" -> sparkUi(sparkContext).getOrElse("").toString,
         "duration" -> (now - sparkContext.startTime),
         "mode" -> mode,
         "activeNb" -> activeStages.size,
@@ -99,6 +110,10 @@ class SparkInfo(sparkContext: SparkContext, checkInterval: Duration = 5 seconds,
       """,
       Json.obj("valueId" -> dataConnection.id)
     )}<ul class="unstyled">
+      <li>
+        <strong>Spark UI:</strong>
+        <span data-bind="text: sparkUi"></span>
+      </li>
       <li>
         <strong>Total Duration:</strong>
         <span data-bind="text: duration"></span>
