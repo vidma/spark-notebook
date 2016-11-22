@@ -346,7 +346,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       case None =>
         val candidates = getCompletions(line, cursorPosition)
 
-        (matchedText, if (candidates.size > 0 && candidates.head.isEmpty) {
+        (matchedText, if (candidates == List("")) {
           List()
         } else {
           candidates.map(Match(_))

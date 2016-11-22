@@ -64,7 +64,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config, execut
                         sys.env.get("YARN_CONF_DIR"),
                         sys.env.get("HADOOP_CONF_DIR"),
                         sys.env.get("EXTRA_CLASSPATH")
-                      ).collect { case Some(x) => x }
+                      ).flatten
 
   def classPath: IndexedSeq[String] =
     if (config.hasPath("classpath")) config.getStringList("classpath").toList.toVector else Vector.empty[String]
